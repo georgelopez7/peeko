@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Peeko</title>
+  <link rel="icon" type="image/svg+xml" href="/ui/peeko-favicon.svg" />
+  <link rel="stylesheet" href="/ui/styles.css" />
+  <script src="/ui/htmx.min.js" defer></script>
+</head>
+<body>
+  <header class="header">
+    <div class="header-logo cell">
+      <img class="logo-img" src="/ui/peeko.svg" alt="Peeko logo" />
+      <span class="logo-mark">PEEKO</span>
+    </div>
+    <div class="header-main cell"></div>
+    <div class="header-actions cell">
+      <button
+        class="button mono-bold"
+        hx-delete="/ui/requests"
+        hx-confirm="Reset — discard all captured requests?"
+        hx-target="#list"
+        hx-swap="innerHTML"
+      >Reset</button>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="sidebar-title-row">
+        <button
+          id="sidebar-toggle"
+          class="icon-button mono"
+          aria-label="Toggle sidebar"
+          aria-expanded="true"
+          title="Toggle sidebar"
+        ></button>
+        <span class="sidebar-title mono-bold">Requests</span>
+      </div>
+      <div
+        id="list"
+        aria-label="Incoming requests"
+        hx-get="/ui/requests"
+        hx-trigger="every 2s"
+        hx-swap="innerHTML"
+      ></div>
+    </aside>
+
+    <main class="main">
+      <div class="grid" aria-hidden="true"></div>
+      <div id="detail">
+        <div class="panel-outer">
+          <div class="panel">
+            <div class="empty">Select a request to inspect it.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    var selectedId = null;
+
+    document.addEventListener("DOMContentLoaded", function () {
+      var toggle = document.getElementById("sidebar-toggle");
+      toggle.addEventListener("click", function () {
+        var collapsed = document.body.classList.toggle("sidebar-collapsed");
+        toggle.setAttribute("aria-expanded", String(!collapsed));
+      });
+    });
+
+    document.addEventListener("click", function (e) {
+      var toggle = e.target.closest(".value-toggle");
+      if (toggle) {
+        var wrap = toggle.closest(".data-value-wrap");
+        var expanded = wrap.classList.toggle("expanded");
+        toggle.textContent = expanded ? "Collapse" : "Show all";
+        return;
+      }
+
+      var row = e.target.closest(".row");
+      if (!row) return;
+      selectedId = row.getAttribute("hx-get").split("/").pop();
+      markActive();
+    });
+
+    document.addEventListener("htmx:afterSwap", function (e) {
+      if (e.target.id === "list") markActive();
+    });
+
+    function markActive() {
+      document.querySelectorAll(".row").forEach(function (row) {
+        var isActive = selectedId !== null && row.getAttribute("hx-get") === "/ui/requests/" + selectedId;
+        row.classList.toggle("is-active", isActive);
+      });
+    }
+  </script>
+</body>
+</html>

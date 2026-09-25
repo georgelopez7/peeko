@@ -1,0 +1,25 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o ./bin/peeko ./cmd/peeko"
+bin = "bin/peeko"
+full_bin = ""
+include_ext = ["go", "html", "css"]
+exclude_dir = ["bin", "tmp", "tools", "vendor"]
+delay = 1000
+stop_on_error = true
+send_interrupt = true
+kill_delay = 2000
+
+[log]
+time = false
+
+[color]
+main = "magenta"
+watcher = "cyan"
+build = "yellow"
+runner = "green"
+
+[misc]
+clean_on_exit = true

@@ -1,0 +1,105 @@
+{{define "list"}}
+<div class="rows">
+  {{range .}}
+  <button
+    class="row"
+    hx-get="/ui/requests/{{.ID}}"
+    hx-target="#detail"
+    hx-swap="innerHTML"
+  >
+    <span class="{{methodClass .Method}}">{{.Method}}</span>
+    <span class="row-path mono-bold">{{.Path}}{{if .RawQuery}}<span class="muted">?{{.RawQuery}}</span>{{end}}</span>
+  </button>
+  {{end}}
+</div>
+{{end}}
+
+{{define "detail"}}
+<div class="detail">
+  <div class="panel-outer">
+    <div class="panel">
+      <div class="panel-title-row">
+        <div class="detail-endpoint">
+          <span class="{{methodClass .Method}}">{{.Method}}</span>
+          <span class="detail-path mono-bold">{{.Path}}{{if .RawQuery}}<span class="muted">?{{.RawQuery}}</span>{{end}}</span>
+        </div>
+        <span class="muted mono tabular">{{.CreatedAt.Format "15:04:05"}}</span>
+      </div>
+      <div class="data-rows">
+        <div class="data-row">
+          <span class="data-label mono">Host</span>
+          <span class="data-value mono-bold tabular">{{.Host}}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label mono">Remote</span>
+          <span class="data-value mono-bold tabular">{{.RemoteAddr}}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label mono">Proto</span>
+          <span class="data-value mono-bold tabular">{{.Proto}}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label mono">Captured</span>
+          <span class="data-value mono-bold tabular">{{.CreatedAt.Format "15:04:05"}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-outer">
+    <div class="panel">
+      <div class="panel-title-row"><span class="panel-title mono-bold">Headers</span></div>
+      <div class="data-rows">
+        {{range .SortedHeaderKeys}}
+        {{- $value := formatValue (index $.Headers .) -}}
+        <div class="data-row">
+          <span class="data-label mono">{{.}}</span>
+          {{if ge (len $value) 160}}
+          <div class="data-value-wrap">
+            <span class="data-value mono-bold tabular clamp">{{ $value }}</span>
+            <button class="value-toggle mono" type="button">Show all</button>
+          </div>
+          {{else}}
+          <span class="data-value mono-bold tabular">{{ $value }}</span>
+          {{end}}
+        </div>
+        {{end}}
+      </div>
+    </div>
+  </div>
+
+  {{if .Query}}
+  <div class="panel-outer">
+    <div class="panel">
+      <div class="panel-title-row"><span class="panel-title mono-bold">Query</span></div>
+      <div class="data-rows">
+        {{range .SortedQueryKeys}}
+        {{- $value := formatValue (index $.Query .) -}}
+        <div class="data-row">
+          <span class="data-label mono">{{.}}</span>
+          {{if ge (len $value) 160}}
+          <div class="data-value-wrap">
+            <span class="data-value mono-bold tabular clamp">{{ $value }}</span>
+            <button class="value-toggle mono" type="button">Show all</button>
+          </div>
+          {{else}}
+          <span class="data-value mono-bold tabular">{{ $value }}</span>
+          {{end}}
+        </div>
+        {{end}}
+      </div>
+    </div>
+  </div>
+  {{end}}
+
+  {{if or .Body .BodyTrunc}}
+  <div class="panel-outer">
+    <div class="panel">
+      <div class="panel-title-row"><span class="panel-title mono-bold">Body</span></div>
+      <pre class="body mono">{{.Body}}</pre>
+      {{if .BodyTrunc}}<div class="muted mono small">Body truncated ({{.Length}} bytes received)</div>{{end}}
+    </div>
+  </div>
+  {{end}}
+</div>
+{{end}}

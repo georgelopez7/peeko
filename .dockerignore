@@ -1,0 +1,13 @@
+.git/
+bin/
+tmp/
+*.md
+.air.toml
+Makefile
+tools/
+*.docker-compose.yaml
+.env
+.env.*
+.vscode/
+.DS_Store
+*.swp
