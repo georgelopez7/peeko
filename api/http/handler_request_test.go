@@ -169,18 +169,16 @@ func TestHTTP_GetRequestByIDHandler(t *testing.T) {
 	})
 }
 
-func TestClearHandler(t *testing.T) {
+func TestHTTP_ResetRequestsHandler(t *testing.T) {
 	s := NewServer("", store.NewStore(10))
 	mockRequest(s, "GET", "/a", nil)
 	mux := s.NewMux()
 
-	t.Run("should DELETE clear return 200", func(t *testing.T) {
+	t.Run("should reset requests", func(t *testing.T) {
 		rec := httptest.NewRecorder()
 		mux.ServeHTTP(rec, httptest.NewRequest("DELETE", "/ui/requests", nil))
 		require.Equal(t, http.StatusOK, rec.Code)
-	})
 
-	t.Run("should DELETE clear the store", func(t *testing.T) {
 		require.Empty(t, s.store.List())
 	})
 }
