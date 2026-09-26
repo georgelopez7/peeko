@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/georgelopez7/peeko/internal/domain"
 )
 
 //go:embed all:_ui
@@ -47,15 +49,12 @@ func (s *Server) getShellHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(shellHTML)
 }
 
-// getRequestsHandler - renders the requests.
-func (s *Server) getRequestsHandler(w http.ResponseWriter, r *http.Request) {
-	requests := s.store.List()
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+// createRequestHandler - captures and stores any unmatched request.
+func (s *Server) createRequestHandler(w http.ResponseWriter, r *http.Request) {
+	captured := domain.NewRequest(0, r)
+	s.store.Add(captured)
 
-	if err := templates.ExecuteTemplate(w, "list", requests); err != nil {
-		slog.Error("render list", "err", err)
-		http.Error(w, "render error", http.StatusInternalServerError)
-	}
+	w.WriteHeader(http.StatusOK)
 }
 
 // getRequestByIDHandler - renders the details of a request by ID.
@@ -75,6 +74,17 @@ func (s *Server) getRequestByIDHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := templates.ExecuteTemplate(w, "detail", captured); err != nil {
 		slog.Error("render detail", "err", err)
+		http.Error(w, "render error", http.StatusInternalServerError)
+	}
+}
+
+// getRequestsHandler - renders the requests.
+func (s *Server) getRequestsHandler(w http.ResponseWriter, r *http.Request) {
+	requests := s.store.List()
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	if err := templates.ExecuteTemplate(w, "list", requests); err != nil {
+		slog.Error("render list", "err", err)
 		http.Error(w, "render error", http.StatusInternalServerError)
 	}
 }
