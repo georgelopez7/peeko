@@ -12,7 +12,6 @@ func (s *Server) NewMux() *http.ServeMux {
 	mux.HandleFunc("GET /ui/htmx.min.js", s.handleAsset(htmxJS, "text/javascript; charset=utf-8"))
 	mux.HandleFunc("GET /ui/styles.css", s.handleAsset(stylesCSS, "text/css; charset=utf-8"))
 	mux.HandleFunc("GET /ui/peeko.svg", s.handleAsset(peekoSVG, "image/svg+xml"))
-	mux.HandleFunc("GET /ui/peeko-favicon.svg", s.handleAsset(peekoFaviconSVG, "image/svg+xml"))
 	mux.HandleFunc("GET /ui/fonts/geist-latin.woff2", s.handleAsset(geistFont, "font/woff2"))
 
 	mux.HandleFunc("/", s.createRequestHandler)

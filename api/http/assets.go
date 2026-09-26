@@ -20,8 +20,6 @@ var stylesCSS, _ = uiFS.ReadFile("_ui/styles.css")
 
 var peekoSVG, _ = uiFS.ReadFile("_ui/assets/peeko.svg")
 
-var peekoFaviconSVG, _ = uiFS.ReadFile("_ui/assets/peeko-favicon.svg")
-
 var geistFont, _ = uiFS.ReadFile("_ui/fonts/geist-latin.woff2")
 
 var shellHTML, _ = uiFS.ReadFile("_ui/index.html")
