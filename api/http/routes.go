@@ -5,7 +5,7 @@ import "net/http"
 func (s *Server) NewMux() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /ui", s.getShellHandler)
+	mux.HandleFunc("GET /ui", s.handleAsset(shellHTML, "text/html; charset=utf-8"))
 	mux.HandleFunc("GET /ui/requests", s.getRequestsHandler)
 	mux.HandleFunc("GET /ui/requests/{id}", s.getRequestByIDHandler)
 	mux.HandleFunc("DELETE /ui/requests", s.resetRequestsHandler)
