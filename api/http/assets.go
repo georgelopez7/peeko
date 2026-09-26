@@ -22,6 +22,8 @@ var peekoSVG, _ = uiFS.ReadFile("_ui/assets/peeko.svg")
 
 var geistFont, _ = uiFS.ReadFile("_ui/fonts/geist-latin.woff2")
 
+var geistMonoFont, _ = uiFS.ReadFile("_ui/fonts/geist-mono-latin.woff2")
+
 var shellHTML, _ = uiFS.ReadFile("_ui/index.html")
 
 var templates = template.Must(template.New("").Funcs(template.FuncMap{

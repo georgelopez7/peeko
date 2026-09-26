@@ -17,6 +17,7 @@
     <div class="header-main cell"></div>
     <div class="header-actions cell">
       <button
+        id="reset-button"
         class="button mono-bold"
         hx-delete="/ui/requests"
         hx-confirm="Reset — discard all captured requests?"
@@ -87,6 +88,15 @@
       if (!row) return;
       selectedId = row.getAttribute("hx-get").split("/").pop();
       markActive();
+    });
+
+    document.addEventListener("htmx:afterRequest", function (e) {
+      if (e.target.id !== "reset-button" || !e.detail.successful) return;
+
+      selectedId = null;
+      var detail = document.getElementById("detail");
+      detail.innerHTML =
+        '<div class="panel-outer"><div class="panel"><div class="empty">Select a request to inspect it.</div></div></div>';
     });
 
     document.addEventListener("htmx:afterSwap", function (e) {

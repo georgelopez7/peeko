@@ -6,6 +6,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Geist Mono Variable";
+  src: url("/ui/fonts/geist-mono-latin.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --bg: #000000;
   --surface: #101010;
@@ -18,7 +26,7 @@
   --green: #22c55e;
   --red: #ef4444;
   --yellow: #eab308;
-  --mono: ui-monospace, "SF Mono", "Geist Mono", Menlo, monospace;
+  --mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
   --sans: -apple-system, "Geist", "Helvetica Neue", sans-serif;
 }
 
