@@ -1,28 +1,17 @@
 package main
 
 import (
-	"flag"
 	"log"
-	"os"
 
-	"github.com/george-lopez/peeko/api/http"
-	"github.com/george-lopez/peeko/internal/store"
+	"github.com/georgelopez7/peeko/api/http"
+	"github.com/georgelopez7/peeko/internal/store"
 )
 
 func main() {
-	var port string
-	flag.StringVar(&port, "port", "", "port to listen on")
-	flag.Parse()
-
-	if port == "" {
-		port = os.Getenv("PORT")
-	}
-	if port == "" {
-		port = "8080"
-	}
+	config := NewConfig()
 
 	st := store.NewStore(100)
-	server := http.NewServer(":"+port, st)
+	server := http.NewServer(":"+config.Port, st)
 
 	log.Fatal(server.Start())
 }

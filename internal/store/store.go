@@ -4,24 +4,22 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/george-lopez/peeko/internal/domain"
+	"github.com/georgelopez7/peeko/internal/domain"
 )
 
-// Store - a thread-safe, bounded in-memory collection of captured requests.
 type Store struct {
 	mu       sync.Mutex
 	maxSize  int
 	nextID   int
-	requests []domain.CapturedRequest
+	requests []domain.Request
 }
 
-// NewStore - creates a store that keeps the last maxSize requests.
 func NewStore(maxSize int) *Store {
 	return &Store{maxSize: maxSize}
 }
 
 // Add - appends a captured request, evicting the oldest when full.
-func (s *Store) Add(r domain.CapturedRequest) domain.CapturedRequest {
+func (s *Store) Add(r domain.Request) domain.Request {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -36,11 +34,11 @@ func (s *Store) Add(r domain.CapturedRequest) domain.CapturedRequest {
 }
 
 // List - returns all captured requests, newest first.
-func (s *Store) List() []domain.CapturedRequest {
+func (s *Store) List() []domain.Request {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	out := make([]domain.CapturedRequest, len(s.requests))
+	out := make([]domain.Request, len(s.requests))
 	for i, r := range s.requests {
 		out[i] = r
 	}
@@ -50,7 +48,7 @@ func (s *Store) List() []domain.CapturedRequest {
 }
 
 // Get - returns the captured request with the given id; ok is false when missing.
-func (s *Store) Get(id int) (domain.CapturedRequest, bool) {
+func (s *Store) Get(id int) (domain.Request, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -60,11 +58,11 @@ func (s *Store) Get(id int) (domain.CapturedRequest, bool) {
 		}
 	}
 
-	return domain.CapturedRequest{}, false
+	return domain.Request{}, false
 }
 
-// Clear - removes all captured requests.
-func (s *Store) Clear() {
+// Reset - removes all requests.
+func (s *Store) Reset() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

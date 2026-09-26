@@ -5,14 +5,14 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/george-lopez/peeko/internal/domain"
+	"github.com/georgelopez7/peeko/internal/domain"
 )
 
 func TestStoreAddListGet(t *testing.T) {
 	s := NewStore(5)
 
-	first := s.Add(domain.CapturedRequest{Method: "GET", Path: "/a"})
-	second := s.Add(domain.CapturedRequest{Method: "POST", Path: "/b"})
+	first := s.Add(domain.Request{Method: "GET", Path: "/a"})
+	second := s.Add(domain.Request{Method: "POST", Path: "/b"})
 
 	if first.ID != 0 || second.ID != 1 {
 		t.Fatalf("want ids 0,1 got %d,%d", first.ID, second.ID)
@@ -37,7 +37,7 @@ func TestStoreEviction(t *testing.T) {
 	s := NewStore(3)
 
 	for i := 0; i < 5; i++ {
-		s.Add(domain.CapturedRequest{Path: "/" + strconv.Itoa(i)})
+		s.Add(domain.Request{Path: "/" + strconv.Itoa(i)})
 	}
 
 	list := s.List()
@@ -55,9 +55,9 @@ func TestStoreEviction(t *testing.T) {
 
 func TestStoreClear(t *testing.T) {
 	s := NewStore(5)
-	s.Add(domain.CapturedRequest{Path: "/a"})
+	s.Add(domain.Request{Path: "/a"})
 
-	s.Clear()
+	s.Reset()
 	if got := s.List(); len(got) != 0 {
 		t.Fatalf("want empty after clear, got %d", len(got))
 	}
@@ -71,7 +71,7 @@ func TestStoreConcurrent(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			s.Add(domain.CapturedRequest{Path: "/x"})
+			s.Add(domain.Request{Path: "/x"})
 			s.List()
 		}()
 	}

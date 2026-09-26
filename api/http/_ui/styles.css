@@ -1,5 +1,3 @@
-/* fonts (fontsource) */
-
 @font-face {
   font-family: "Geist Variable";
   src: url("/ui/fonts/geist-latin.woff2") format("woff2-variations");

@@ -7,11 +7,9 @@ import (
 	"time"
 )
 
-// MaxBodySize - the maximum number of body bytes kept when capturing a request.
 const MaxBodySize = 64 * 1024
 
-// CapturedRequest - a single captured HTTP request with all inspection data.
-type CapturedRequest struct {
+type Request struct {
 	ID         int            `json:"id"`
 	Method     string         `json:"method"`
 	Path       string         `json:"path"`
@@ -27,8 +25,7 @@ type CapturedRequest struct {
 	CreatedAt  time.Time      `json:"created_at"`
 }
 
-// NewCapturedRequest - captures a request from the given *http.Request.
-func NewCapturedRequest(id int, r *http.Request) CapturedRequest {
+func NewRequest(id int, r *http.Request) Request {
 	headers := make(map[string]any, len(r.Header))
 	for k, v := range r.Header {
 		if k == "Cookie" {
@@ -53,7 +50,7 @@ func NewCapturedRequest(id int, r *http.Request) CapturedRequest {
 
 	body, truncated := readBody(r)
 
-	return CapturedRequest{
+	return Request{
 		ID:         id,
 		Method:     r.Method,
 		Path:       r.URL.Path,
@@ -86,7 +83,7 @@ func readBody(r *http.Request) (string, bool) {
 }
 
 // SortedHeaderKeys - returns the header keys in sorted order for stable rendering.
-func (c CapturedRequest) SortedHeaderKeys() []string {
+func (c Request) SortedHeaderKeys() []string {
 	keys := make([]string, 0, len(c.Headers))
 	for k := range c.Headers {
 		keys = append(keys, k)
@@ -96,7 +93,7 @@ func (c CapturedRequest) SortedHeaderKeys() []string {
 }
 
 // SortedQueryKeys - returns the query param keys in sorted order for stable rendering.
-func (c CapturedRequest) SortedQueryKeys() []string {
+func (c Request) SortedQueryKeys() []string {
 	keys := make([]string, 0, len(c.Query))
 	for k := range c.Query {
 		keys = append(keys, k)

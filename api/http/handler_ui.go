@@ -21,20 +21,17 @@ var templates = template.Must(template.New("").Funcs(template.FuncMap{
 	"formatValue": formatValue,
 }).ParseFS(tplFS, "templates.html"))
 
-// htmxJS - the vendored htmx script served from _ui.
 var htmxJS, _ = uiFS.ReadFile("_ui/htmx.min.js")
 
-// stylesCSS - the design stylesheet served from _ui.
 var stylesCSS, _ = uiFS.ReadFile("_ui/styles.css")
 
-// peekoSVG - the Peeko logo served from _ui.
 var peekoSVG, _ = uiFS.ReadFile("_ui/peeko.svg")
 
-// peekoFaviconSVG - the Peeko logo cropped for the favicon, served from _ui.
 var peekoFaviconSVG, _ = uiFS.ReadFile("_ui/peeko-favicon.svg")
 
-// geistFont - the Geist variable font (fontsource) served from _ui.
 var geistFont, _ = uiFS.ReadFile("_ui/fonts/geist-latin.woff2")
+
+var shellHTML, _ = uiFS.ReadFile("_ui/index.html")
 
 // handleAsset - serves an embedded static asset with the given content type.
 func (s *Server) handleAsset(data []byte, contentType string) http.HandlerFunc {
@@ -44,14 +41,14 @@ func (s *Server) handleAsset(data []byte, contentType string) http.HandlerFunc {
 	}
 }
 
-// handleShell - serves the htmx index page.
-func (s *Server) handleShell(w http.ResponseWriter, r *http.Request) {
+// getShellHandler - serves the htmx index page.
+func (s *Server) getShellHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Write(shellHTML)
 }
 
-// handleList - renders the captured request list fragment; polled by htmx.
-func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
+// getRequestsHandler - renders the requests.
+func (s *Server) getRequestsHandler(w http.ResponseWriter, r *http.Request) {
 	requests := s.store.List()
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
@@ -61,8 +58,8 @@ func (s *Server) handleList(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleDetail - renders the detail fragment for a single captured request.
-func (s *Server) handleDetail(w http.ResponseWriter, r *http.Request) {
+// getRequestByIDHandler - renders the details of a request by ID.
+func (s *Server) getRequestByIDHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
@@ -82,13 +79,13 @@ func (s *Server) handleDetail(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleClear - drops all captured requests and re-renders the list.
-func (s *Server) handleClear(w http.ResponseWriter, r *http.Request) {
-	s.store.Clear()
-	s.handleList(w, r)
+// resetRequestsHandler - resets all captured requests.
+func (s *Server) resetRequestsHandler(w http.ResponseWriter, r *http.Request) {
+	s.store.Reset()
+	s.getRequestsHandler(w, r)
 }
 
-// methodClass - maps an HTTP method to its semantic badge class.
+// methodClass - maps an http method to specific css styling.
 func methodClass(method string) string {
 	switch method {
 	case http.MethodGet:
@@ -121,6 +118,3 @@ func formatValue(v any) string {
 		return fmt.Sprint(value)
 	}
 }
-
-// shellHTML - the htmx index shell served from _ui.
-var shellHTML, _ = uiFS.ReadFile("_ui/index.html")

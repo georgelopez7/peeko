@@ -1,6 +1,6 @@
 package http
 
-import "github.com/george-lopez/peeko/internal/store"
+import "github.com/georgelopez7/peeko/internal/store"
 
 // Server - the Peeko HTTP server holding the request store.
 type Server struct {
