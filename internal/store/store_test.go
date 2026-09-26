@@ -6,78 +6,95 @@ import (
 	"testing"
 
 	"github.com/georgelopez7/peeko/internal/domain"
+	"github.com/stretchr/testify/require"
 )
 
-func TestStoreAddListGet(t *testing.T) {
+func TestStore_Add(t *testing.T) {
 	s := NewStore(5)
 
-	first := s.Add(domain.Request{Method: "GET", Path: "/a"})
-	second := s.Add(domain.Request{Method: "POST", Path: "/b"})
+	t.Run("should assign sequential ids", func(t *testing.T) {
+		first := s.Add(domain.Request{Method: "GET", Path: "/a"})
+		second := s.Add(domain.Request{Method: "POST", Path: "/b"})
 
-	if first.ID != 0 || second.ID != 1 {
-		t.Fatalf("want ids 0,1 got %d,%d", first.ID, second.ID)
-	}
+		require.Equal(t, 0, first.ID)
+		require.Equal(t, 1, second.ID)
+	})
 
-	list := s.List()
-	if len(list) != 2 || list[0].ID != 1 || list[1].ID != 0 {
-		t.Fatalf("want newest-first [1,0], got %v", list)
-	}
+	t.Run("should evict oldest beyond capacity", func(t *testing.T) {
+		full := NewStore(3)
 
-	got, ok := s.Get(0)
-	if !ok || got.Path != "/a" {
-		t.Fatalf("want /a, got %q ok=%v", got.Path, ok)
-	}
+		for i := 0; i < 5; i++ {
+			full.Add(domain.Request{Path: "/" + strconv.Itoa(i)})
+		}
 
-	if _, ok := s.Get(99); ok {
-		t.Fatal("want missing id to not be found")
-	}
+		list := full.List()
+		require.Len(t, list, 3)
+		require.Equal(t, "/4", list[0].Path)
+		require.Equal(t, "/2", list[2].Path)
+
+		_, ok := full.GetByID(0)
+		require.False(t, ok)
+	})
 }
 
-func TestStoreEviction(t *testing.T) {
-	s := NewStore(3)
-
-	for i := 0; i < 5; i++ {
-		s.Add(domain.Request{Path: "/" + strconv.Itoa(i)})
-	}
-
-	list := s.List()
-	if len(list) != 3 {
-		t.Fatalf("want 3 entries, got %d", len(list))
-	}
-	if list[0].Path != "/4" || list[2].Path != "/2" {
-		t.Fatalf("want newest /4 oldest /2, got %q..%q", list[0].Path, list[2].Path)
-	}
-
-	if _, ok := s.Get(0); ok {
-		t.Fatal("want evicted id to not be found")
-	}
-}
-
-func TestStoreClear(t *testing.T) {
+func TestStore_GetByID(t *testing.T) {
 	s := NewStore(5)
-	s.Add(domain.Request{Path: "/a"})
+	added := s.Add(domain.Request{Method: "GET", Path: "/a"})
 
-	s.Reset()
-	if got := s.List(); len(got) != 0 {
-		t.Fatalf("want empty after clear, got %d", len(got))
-	}
+	t.Run("should get existing id", func(t *testing.T) {
+		got, ok := s.GetByID(added.ID)
+		require.True(t, ok)
+		require.Equal(t, "/a", got.Path)
+	})
+
+	t.Run("should not get missing id", func(t *testing.T) {
+		_, ok := s.GetByID(99)
+		require.False(t, ok)
+	})
 }
 
-func TestStoreConcurrent(t *testing.T) {
+func TestStore_List(t *testing.T) {
+	s := NewStore(5)
+
+	t.Run("should list newest-first", func(t *testing.T) {
+		s.Add(domain.Request{Method: "GET", Path: "/a"})
+		s.Add(domain.Request{Method: "POST", Path: "/b"})
+
+		list := s.List()
+		require.Len(t, list, 2)
+		require.Equal(t, 1, list[0].ID)
+		require.Equal(t, 0, list[1].ID)
+	})
+}
+
+func TestStore_Reset(t *testing.T) {
+	s := NewStore(5)
+
+	t.Run("should clear all requests", func(t *testing.T) {
+		s.Add(domain.Request{Path: "/a"})
+		s.Reset()
+
+		require.Empty(t, s.List())
+	})
+}
+
+func TestStore_Concurrency(t *testing.T) {
 	s := NewStore(10)
 
-	var wg sync.WaitGroup
-	for i := 0; i < 50; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			s.Add(domain.Request{Path: "/x"})
-			s.List()
-		}()
-	}
-	wg.Wait()
+	t.Run("should handle concurrent adds and lists", func(t *testing.T) {
+		var wg sync.WaitGroup
 
-	if got := s.List(); len(got) != 10 {
-		t.Fatalf("want 10 after concurrent adds, got %d", len(got))
-	}
+		for i := 0; i < 50; i++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				s.Add(domain.Request{Path: "/x"})
+				s.List()
+			}()
+		}
+
+		wg.Wait()
+
+		require.Len(t, s.List(), 10)
+	})
 }

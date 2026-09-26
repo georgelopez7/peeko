@@ -18,7 +18,7 @@ func NewStore(maxSize int) *Store {
 	return &Store{maxSize: maxSize}
 }
 
-// Add - appends a captured request, evicting the oldest when full.
+// Add - appends a request evicting the oldest when full.
 func (s *Store) Add(r domain.Request) domain.Request {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -26,6 +26,7 @@ func (s *Store) Add(r domain.Request) domain.Request {
 	r.ID = s.nextID
 	s.nextID++
 	s.requests = append(s.requests, r)
+
 	if len(s.requests) > s.maxSize {
 		s.requests = s.requests[len(s.requests)-s.maxSize:]
 	}
@@ -33,7 +34,21 @@ func (s *Store) Add(r domain.Request) domain.Request {
 	return r
 }
 
-// List - returns all captured requests, newest first.
+// GetByID - returns the request by ID.
+func (s *Store) GetByID(id int) (domain.Request, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for _, r := range s.requests {
+		if r.ID == id {
+			return r, true
+		}
+	}
+
+	return domain.Request{}, false
+}
+
+// List - returns all requests ordered by newest first.
 func (s *Store) List() []domain.Request {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -45,20 +60,6 @@ func (s *Store) List() []domain.Request {
 	sort.Slice(out, func(i, j int) bool { return out[i].ID > out[j].ID })
 
 	return out
-}
-
-// Get - returns the captured request with the given id; ok is false when missing.
-func (s *Store) Get(id int) (domain.Request, bool) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	for _, r := range s.requests {
-		if r.ID == id {
-			return r, true
-		}
-	}
-
-	return domain.Request{}, false
 }
 
 // Reset - removes all requests.

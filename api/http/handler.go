@@ -24,7 +24,7 @@ func (s *Server) getRequestByIDHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	captured, ok := s.store.Get(id)
+	captured, ok := s.store.GetByID(id)
 	if !ok {
 		http.Error(w, "request not found", http.StatusNotFound)
 		return
