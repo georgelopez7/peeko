@@ -8,9 +8,9 @@ import (
 	"fmt"
 )
 
-// rebuildSignature - computes the expected HMAC-SHA256 signature over the signed content in the configured encoding.
-func (v *Verifier) rebuildSignature(body []byte, timestamp string, secret string) (string, error) {
-	mac := hmac.New(sha256.New, []byte(secret))
+// rebuildSignature - computes the expected HMAC-SHA256 signature.
+func (v *Verifier) rebuildSignature(body []byte, timestamp string) (string, error) {
+	mac := hmac.New(sha256.New, v.cfg.Secret)
 	mac.Write([]byte(signedContent(body, timestamp)))
 
 	switch v.cfg.Encoding {

@@ -136,7 +136,7 @@ func (v *Verifier) Verify(headers http.Header, body []byte, now time.Time) Resul
 		signature = strings.TrimPrefix(signature, v.cfg.Prefix)
 	}
 
-	built, err := v.rebuildSignature(body, timestamp, string(v.cfg.Secret))
+	built, err := v.rebuildSignature(body, timestamp)
 	if err != nil {
 		res.Status = StatusInvalid
 		res.Note = NoteInvalidSignatureEncoding
