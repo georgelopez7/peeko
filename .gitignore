@@ -2,6 +2,7 @@ bin/
 /peeko
 .env
 .env.*
+!.env.sample
 .DS_Store
 .vscode/
 tmp/

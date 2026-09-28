@@ -28,6 +28,7 @@ var shellHTML, _ = uiFS.ReadFile("_ui/index.html")
 
 var templates = template.Must(template.New("").Funcs(template.FuncMap{
 	"methodClass": methodClass,
+	"statusClass": statusClass,
 	"formatValue": formatValue,
 }).ParseFS(tplFS, "templates.html"))
 
@@ -58,6 +59,22 @@ func methodClass(method string) string {
 		return "badge badge-options"
 	default:
 		return "badge badge-other"
+	}
+}
+
+// statusClass - maps a webhook status to specific css styling.
+func statusClass(status string) string {
+	switch status {
+	case "valid":
+		return "badge badge-valid"
+	case "invalid":
+		return "badge badge-invalid"
+	case "expired":
+		return "badge badge-expired"
+	case "missing":
+		return "badge badge-missing"
+	default:
+		return "badge badge-skipped"
 	}
 }
 

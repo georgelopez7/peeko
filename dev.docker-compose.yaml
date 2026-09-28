@@ -7,4 +7,11 @@ services:
       - "8080:8080"
     environment:
       - PORT=8080
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET-}
+      # ${VAR-default} (no colon): unset in .env -> Go default; set-but-empty -> body-only signing
+      - WEBHOOK_SIGNATURE_HEADER=${WEBHOOK_SIGNATURE_HEADER-X-Webhook-Signature}
+      - WEBHOOK_TIMESTAMP_HEADER=${WEBHOOK_TIMESTAMP_HEADER-X-Webhook-Timestamp}
+      - WEBHOOK_SIGNATURE_ENCODING=${WEBHOOK_SIGNATURE_ENCODING-hex}
+      - WEBHOOK_SIGNATURE_PREFIX=${WEBHOOK_SIGNATURE_PREFIX-}
+      - WEBHOOK_TOLERANCE=${WEBHOOK_TOLERANCE-5m}
     restart: unless-stopped

@@ -23,9 +23,19 @@ type Request struct {
 	BodyTrunc  bool           `json:"body_truncated"`
 	Length     int            `json:"length"`
 	CreatedAt  time.Time      `json:"created_at"`
+	Webhook    *WebhookCheck  `json:"webhook,omitempty"`
 }
 
-func NewRequest(id int, r *http.Request) Request {
+// WebhookCheck - the webhook signature verification outcome for a captured request.
+type WebhookCheck struct {
+	Status            string `json:"status"`
+	SignedPayload     string `json:"signed_payload"`
+	ReceivedSignature string `json:"received_signature"`
+	ComputedSignature string `json:"computed_signature"`
+	Note              string `json:"note,omitempty"`
+}
+
+func NewRequest(id int, r *http.Request, body []byte, truncated bool) Request {
 	headers := make(map[string]any, len(r.Header))
 	for k, v := range r.Header {
 		if k == "Cookie" {
@@ -48,8 +58,6 @@ func NewRequest(id int, r *http.Request) Request {
 		query[k] = v
 	}
 
-	body, truncated := readBody(r)
-
 	return Request{
 		ID:         id,
 		Method:     r.Method,
@@ -60,26 +68,11 @@ func NewRequest(id int, r *http.Request) Request {
 		Proto:      r.Proto,
 		Query:      query,
 		Headers:    headers,
-		Body:       body,
+		Body:       string(body),
 		BodyTrunc:  truncated,
 		Length:     int(r.ContentLength),
 		CreatedAt:  time.Now().UTC(),
 	}
-}
-
-// readBody - reads up to MaxBodySize bytes from the request body.
-func readBody(r *http.Request) (string, bool) {
-	if r.Body == nil || r.ContentLength == 0 {
-		return "", false
-	}
-
-	buf := make([]byte, MaxBodySize+1)
-	n, err := r.Body.Read(buf)
-	if n == 0 && err != nil {
-		return "", false
-	}
-
-	return string(buf[:min(n, MaxBodySize)]), n > MaxBodySize
 }
 
 // SortedHeaderKeys - returns the header keys in sorted order for stable rendering.

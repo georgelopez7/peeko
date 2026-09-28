@@ -68,6 +68,58 @@
     </div>
   </div>
 
+  {{if .Webhook}}
+  <div class="panel-outer">
+    <div class="panel">
+      <div class="panel-title-row">
+        <span class="panel-title mono-bold">Webhook Verification</span>
+        <span class="{{statusClass .Webhook.Status}}">{{.Webhook.Status}}</span>
+      </div>
+      <div class="data-rows">
+        {{if .Webhook.Note}}
+        <div class="data-row">
+          <span class="data-label mono">Note</span>
+          <span class="data-value mono tabular">{{.Webhook.Note}}</span>
+        </div>
+        {{end}}
+        <div class="data-row">
+          <span class="data-label mono">Received</span>
+          {{if ge (len .Webhook.ReceivedSignature) 160}}
+          <div class="data-value-wrap">
+            <span class="data-value mono-bold tabular clamp">{{.Webhook.ReceivedSignature}}</span>
+            <button class="value-toggle mono" type="button">Show all</button>
+          </div>
+          {{else}}
+          <span class="data-value mono-bold tabular">{{.Webhook.ReceivedSignature}}</span>
+          {{end}}
+        </div>
+        <div class="data-row">
+          <span class="data-label mono">Computed</span>
+          {{if ge (len .Webhook.ComputedSignature) 160}}
+          <div class="data-value-wrap">
+            <span class="data-value mono-bold tabular clamp">{{.Webhook.ComputedSignature}}</span>
+            <button class="value-toggle mono" type="button">Show all</button>
+          </div>
+          {{else}}
+          <span class="data-value mono-bold tabular">{{.Webhook.ComputedSignature}}</span>
+          {{end}}
+        </div>
+        <div class="data-row">
+          <span class="data-label mono">Signed content</span>
+          {{if ge (len .Webhook.SignedPayload) 160}}
+          <div class="data-value-wrap">
+            <span class="data-value mono-bold tabular clamp">{{.Webhook.SignedPayload}}</span>
+            <button class="value-toggle mono" type="button">Show all</button>
+          </div>
+          {{else}}
+          <span class="data-value mono-bold tabular">{{.Webhook.SignedPayload}}</span>
+          {{end}}
+        </div>
+      </div>
+    </div>
+  </div>
+  {{end}}
+
   {{if .Query}}
   <div class="panel-outer">
     <div class="panel">

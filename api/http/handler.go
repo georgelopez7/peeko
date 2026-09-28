@@ -4,14 +4,11 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
-
-	"github.com/georgelopez7/peeko/internal/domain"
 )
 
 // createRequestHandler - captures and stores any unmatched request.
 func (s *Server) createRequestHandler(w http.ResponseWriter, r *http.Request) {
-	captured := domain.NewRequest(0, r)
-	s.store.Add(captured)
+	s.service.InsertRequest(r)
 
 	w.WriteHeader(http.StatusOK)
 }
@@ -24,7 +21,7 @@ func (s *Server) getRequestByIDHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	captured, ok := s.store.GetByID(id)
+	captured, ok := s.service.GetRequestByID(id)
 	if !ok {
 		http.Error(w, "request not found", http.StatusNotFound)
 		return
@@ -39,7 +36,7 @@ func (s *Server) getRequestByIDHandler(w http.ResponseWriter, r *http.Request) {
 
 // getRequestsHandler - renders the requests.
 func (s *Server) getRequestsHandler(w http.ResponseWriter, r *http.Request) {
-	requests := s.store.List()
+	requests := s.service.ListRequests()
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	if err := templates.ExecuteTemplate(w, "list", requests); err != nil {
@@ -50,6 +47,6 @@ func (s *Server) getRequestsHandler(w http.ResponseWriter, r *http.Request) {
 
 // resetRequestsHandler - resets all captured requests.
 func (s *Server) resetRequestsHandler(w http.ResponseWriter, r *http.Request) {
-	s.store.Reset()
+	s.service.ResetRequests()
 	s.getRequestsHandler(w, r)
 }
