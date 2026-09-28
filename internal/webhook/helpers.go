@@ -5,18 +5,22 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 )
 
 // rebuildSignature - computes the expected HMAC-SHA256 signature over the signed content in the configured encoding.
-func (v *Verifier) rebuildSignature(body []byte, timestamp string, secret string) string {
+func (v *Verifier) rebuildSignature(body []byte, timestamp string, secret string) (string, error) {
 	mac := hmac.New(sha256.New, []byte(secret))
 	mac.Write([]byte(signedContent(body, timestamp)))
 
-	if v.cfg.Encoding == EncodingBase64 {
-		return base64.StdEncoding.EncodeToString(mac.Sum(nil))
+	switch v.cfg.Encoding {
+	case EncodingBase64:
+		return base64.StdEncoding.EncodeToString(mac.Sum(nil)), nil
+	case EncodingHex:
+		return hex.EncodeToString(mac.Sum(nil)), nil
+	default:
+		return "", fmt.Errorf("invalid encoding: %q", v.cfg.Encoding)
 	}
-
-	return hex.EncodeToString(mac.Sum(nil))
 }
 
 // signedContent - the exact string covered by the signature

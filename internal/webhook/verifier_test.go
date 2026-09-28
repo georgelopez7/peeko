@@ -66,7 +66,7 @@ func TestVerifier(t *testing.T) {
 		res := v.Verify(http.Header{}, []byte(testBody), testTime)
 
 		require.Equal(t, StatusSkipped, res.Status)
-		require.NotEmpty(t, res.Note)
+		require.Equal(t, NoteVerificationDisabled, res.Note)
 	})
 
 	t.Run("should skip when the verifier is nil", func(t *testing.T) {
@@ -86,7 +86,7 @@ func TestVerifier(t *testing.T) {
 		res := v.Verify(h, []byte(testBody), testTime)
 
 		require.Equal(t, StatusMissing, res.Status)
-		require.Contains(t, res.Note, "X-Webhook-Signature")
+		require.Equal(t, NoteMissingSignatureHeader, res.Note)
 	})
 
 	t.Run("should flag a missing timestamp header", func(t *testing.T) {
@@ -98,7 +98,7 @@ func TestVerifier(t *testing.T) {
 		res := v.Verify(h, []byte(testBody), testTime)
 
 		require.Equal(t, StatusMissing, res.Status)
-		require.Contains(t, res.Note, "X-Webhook-Timestamp")
+		require.Equal(t, NoteMissingTimestampHeader, res.Note)
 	})
 
 	t.Run("should accept a valid signature", func(t *testing.T) {
@@ -137,7 +137,7 @@ func TestVerifier(t *testing.T) {
 		res := v.Verify(testHeaders("X-Webhook-Timestamp", ts, sig), []byte(testBody), testTime)
 
 		require.Equal(t, StatusExpired, res.Status)
-		require.Contains(t, res.Note, "outside tolerance")
+		require.Equal(t, NoteTimestampTooOld, res.Note)
 	})
 
 	t.Run("should flag an unparsable timestamp", func(t *testing.T) {
@@ -153,7 +153,7 @@ func TestVerifier(t *testing.T) {
 		res := v.Verify(h, []byte(testBody), testTime)
 
 		require.Equal(t, StatusExpired, res.Status)
-		require.Contains(t, res.Note, "unix")
+		require.Equal(t, NoteInvalidTimestampHeader, res.Note)
 	})
 
 	t.Run("should flag a tampered body", func(t *testing.T) {
@@ -166,6 +166,7 @@ func TestVerifier(t *testing.T) {
 		res := v.Verify(testHeaders("X-Webhook-Timestamp", ts, sig), []byte(`{"event":"hacked"}`), testTime)
 
 		require.Equal(t, StatusInvalid, res.Status)
+		require.Equal(t, NoteSignatureMismatch, res.Note)
 		require.Equal(t, sig, res.ReceivedSignature)
 		require.NotEqual(t, sig, res.ComputedSignature)
 	})
@@ -180,6 +181,7 @@ func TestVerifier(t *testing.T) {
 		res := v.Verify(testHeaders("X-Webhook-Timestamp", ts+1, sig), []byte(testBody), testTime)
 
 		require.Equal(t, StatusInvalid, res.Status)
+		require.Equal(t, NoteSignatureMismatch, res.Note)
 	})
 
 	t.Run("should accept a body-only signature", func(t *testing.T) {
@@ -269,7 +271,7 @@ func TestVerifier(t *testing.T) {
 		res := v.Verify(testHeaders("X-Webhook-Timestamp", ts, sig), []byte(testBody), testTime)
 
 		require.Equal(t, StatusInvalid, res.Status)
-		require.NotEqual(t, sig, res.ComputedSignature)
+		require.Equal(t, NoteSignatureMismatch, res.Note)
 	})
 
 	t.Run("should flag a malformed signature", func(t *testing.T) {
@@ -280,7 +282,7 @@ func TestVerifier(t *testing.T) {
 		res := v.Verify(testHeaders("X-Webhook-Timestamp", ts, "g7h8!not-hex"), []byte(testBody), testTime)
 
 		require.Equal(t, StatusInvalid, res.Status)
-		require.Contains(t, res.Note, "mismatch")
+		require.Equal(t, NoteSignatureMismatch, res.Note)
 	})
 
 	t.Run("should flag rotation-style multi-signatures as invalid", func(t *testing.T) {
@@ -298,6 +300,7 @@ func TestVerifier(t *testing.T) {
 		res := v.Verify(h, []byte(testBody), testTime)
 
 		require.Equal(t, StatusInvalid, res.Status)
+		require.Equal(t, NoteSignatureMismatch, res.Note)
 	})
 
 	t.Run("should accept a comma-prefixed signature", func(t *testing.T) {
@@ -338,7 +341,7 @@ func TestVerifier(t *testing.T) {
 		res := v.Verify(testHeaders("X-Webhook-Timestamp", ts, "00"), nil, testTime)
 
 		require.Equal(t, StatusInvalid, res.Status)
-		require.NotEmpty(t, res.Note)
+		require.Equal(t, NoteSignatureMismatch, res.Note)
 	})
 
 	t.Run("should read a multi-value signature header", func(t *testing.T) {
