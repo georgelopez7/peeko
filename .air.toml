@@ -3,7 +3,7 @@ tmp_dir = "tmp"
 
 [build]
 cmd = "go build -o ./bin/peeko ./cmd/peeko"
-bin = "bin/peeko"
+entrypoint = "bin/peeko"
 full_bin = ""
 include_ext = ["go", "html", "css"]
 exclude_dir = ["bin", "tmp", "tools", "vendor"]

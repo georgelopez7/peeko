@@ -14,6 +14,10 @@ run: # [ make run ]
 	@command -v air >/dev/null 2>&1 || { echo "> air not found — install: go install github.com/air-verse/air@latest"; exit 1; }
 	@set -a && . ./.env && set +a && echo "> UI: http://localhost:$${PORT:-8080}/ui" && air
 
+stop: # [ make stop ]
+	@lsof -ti :8080 -s TCP:LISTEN | xargs kill 2>/dev/null || true
+	@echo "> Peeko Stopped"
+
 vet: # [ make vet ]
 	go vet ./...
 
@@ -22,10 +26,6 @@ test: # [ make test ]
 
 run-hurl: # [ make run-hurl BASE_URL=http://localhost:8080 ]
 	bash tools/run-hurl.sh $(BASE_URL)
-
-stop: # [ make stop ]
-	@lsof -ti :8080 -s TCP:LISTEN | xargs kill 2>/dev/null || true
-	@echo "> Peeko Stopped"
 
 dev: # [ make dev ]
 	@test -f .env || cp .env.sample .env

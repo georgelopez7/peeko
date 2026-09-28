@@ -14,7 +14,7 @@ type Env struct {
 	WebhookTimestampHeader string
 	WebhookEncoding        string
 	WebhookSignaturePrefix string
-	WebhookTolerance       int // milliseconds
+	WebhookTolerance       int
 }
 
 type Config struct {
@@ -35,37 +35,41 @@ func NewConfig() Config {
 	flag.Parse()
 
 	if env.Port == "" {
-		env.Port = os.Getenv("PORT")
+		env.Port = envWithDefault("PORT", "8080")
 	}
 
 	if env.WebhookSecret == "" {
 		env.WebhookSecret = os.Getenv("WEBHOOK_SECRET")
 	}
 
-	if env.WebhookSignatureHeader == "" {
-		env.WebhookSignatureHeader = envWithDefault("WEBHOOK_SIGNATURE_HEADER", "X-Webhook-Signature")
-	}
+	if env.WebhookSecret != "" {
+		// Webhook verification is enabled.
 
-	if env.WebhookTimestampHeader == "" {
-		env.WebhookTimestampHeader = envWithDefault("WEBHOOK_TIMESTAMP_HEADER", "X-Webhook-Timestamp")
-	}
+		if env.WebhookSignatureHeader == "" {
+			env.WebhookSignatureHeader = envWithDefault("WEBHOOK_SIGNATURE_HEADER", "X-Webhook-Signature")
+		}
 
-	if env.WebhookEncoding == "" {
-		env.WebhookEncoding = os.Getenv("WEBHOOK_SIGNATURE_ENCODING")
-	}
+		if env.WebhookTimestampHeader == "" {
+			env.WebhookTimestampHeader = envWithDefault("WEBHOOK_TIMESTAMP_HEADER", "X-Webhook-Timestamp")
+		}
 
-	if env.WebhookSignaturePrefix == "" {
-		env.WebhookSignaturePrefix = os.Getenv("WEBHOOK_SIGNATURE_PREFIX")
-	}
+		if env.WebhookEncoding == "" {
+			env.WebhookEncoding = os.Getenv("WEBHOOK_SIGNATURE_ENCODING")
+		}
 
-	if env.WebhookTolerance == 0 {
-		if v, ok := os.LookupEnv("WEBHOOK_TOLERANCE"); ok {
-			parsed, err := strconv.Atoi(v)
-			if err != nil {
-				log.Fatalf("invalid WEBHOOK_TOLERANCE %q - must be an integer (milliseconds)", v)
+		if env.WebhookSignaturePrefix == "" {
+			env.WebhookSignaturePrefix = os.Getenv("WEBHOOK_SIGNATURE_PREFIX")
+		}
+
+		if env.WebhookTolerance == 0 {
+			if v, ok := os.LookupEnv("WEBHOOK_TOLERANCE"); ok {
+				parsed, err := strconv.Atoi(v)
+				if err != nil {
+					log.Fatalf("invalid WEBHOOK_TOLERANCE %q - must be an integer (milliseconds)", v)
+				}
+
+				env.WebhookTolerance = parsed
 			}
-
-			env.WebhookTolerance = parsed
 		}
 	}
 

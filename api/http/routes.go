@@ -19,8 +19,3 @@ func (s *Server) NewMux() *http.ServeMux {
 
 	return mux
 }
-
-// Start - starts the HTTP server on the configured address.
-func (s *Server) Start() error {
-	return http.ListenAndServe(s.addr, s.NewMux())
-}

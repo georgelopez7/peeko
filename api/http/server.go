@@ -1,6 +1,8 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/georgelopez7/peeko/internal/service"
 )
 
@@ -17,4 +19,9 @@ func NewServer(addr string, svc *service.Service) *Server {
 // Addr - returns the address the server listens on.
 func (s *Server) Addr() string {
 	return s.addr
+}
+
+// Start - starts the HTTP server on the configured address.
+func (s *Server) Start() error {
+	return http.ListenAndServe(s.addr, s.NewMux())
 }
