@@ -33,8 +33,15 @@ func main() {
 
 	// SERVER
 	server := http.NewServer(":"+config.Port, svc)
-	defer server.Stop()
-	if err := server.Start(); err != nil {
-		log.Fatal(err)
+	go func() {
+		if err := server.Start(); err != nil {
+			log.Fatalf("server: %v", err)
+		}
+	}()
+
+	waitShutdown()
+
+	if err := server.Stop(); err != nil {
+		log.Printf("server shutdown: %v", err)
 	}
 }

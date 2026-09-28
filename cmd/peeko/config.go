@@ -4,7 +4,9 @@ import (
 	"flag"
 	"log"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 )
 
 type Env struct {
@@ -81,4 +83,11 @@ func envWithDefault(key, def string) string {
 		return v
 	}
 	return def
+}
+
+// waitShutdown - blocks until the process receives SIGINT or SIGTERM.
+func waitShutdown() {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	<-ch
 }

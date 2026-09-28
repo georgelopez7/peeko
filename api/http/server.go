@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"time"
 
@@ -27,7 +28,11 @@ func (s *Server) Addr() string {
 // Start - starts the HTTP server on the configured address.
 func (s *Server) Start() error {
 	s.srv.Handler = s.NewMux()
-	return s.srv.ListenAndServe()
+	if err := s.srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+
+	return nil
 }
 
 // Stop - gracefully shuts down the server, waiting for in-flight requests.
