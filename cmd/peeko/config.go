@@ -31,7 +31,7 @@ func NewConfig() Config {
 	flag.StringVar(&env.WebhookTimestampHeader, "webhook-timestamp-header", "", "header carrying the timestamp (empty = body-only)")
 	flag.StringVar(&env.WebhookEncoding, "webhook-signature-encoding", "", "signature encoding: hex or base64")
 	flag.StringVar(&env.WebhookSignaturePrefix, "webhook-signature-prefix", "", "signature prefix, e.g. \"sha256=\" or \"v1,\"")
-	flag.IntVar(&env.WebhookTolerance, "webhook-tolerance", 0, "timestamp tolerance in milliseconds (e.g. 300000 = 5m)")
+	flag.IntVar(&env.WebhookTolerance, "webhook-tolerance", 0, "timestamp tolerance in milliseconds (e.g. 300000 = 5 minutes)")
 	flag.Parse()
 
 	if env.Port == "" {
@@ -54,22 +54,21 @@ func NewConfig() Config {
 		}
 
 		if env.WebhookEncoding == "" {
-			env.WebhookEncoding = os.Getenv("WEBHOOK_SIGNATURE_ENCODING")
+			env.WebhookEncoding = envWithDefault("WEBHOOK_SIGNATURE_ENCODING", "base64")
 		}
 
 		if env.WebhookSignaturePrefix == "" {
-			env.WebhookSignaturePrefix = os.Getenv("WEBHOOK_SIGNATURE_PREFIX")
+			env.WebhookSignaturePrefix = envWithDefault("WEBHOOK_SIGNATURE_PREFIX", "")
 		}
 
 		if env.WebhookTolerance == 0 {
-			if v, ok := os.LookupEnv("WEBHOOK_TOLERANCE"); ok {
-				parsed, err := strconv.Atoi(v)
-				if err != nil {
-					log.Fatalf("invalid WEBHOOK_TOLERANCE %q - must be an integer (milliseconds)", v)
-				}
-
-				env.WebhookTolerance = parsed
+			_tolerance := envWithDefault("WEBHOOK_TOLERANCE", "300000")
+			parsed, err := strconv.Atoi(_tolerance)
+			if err != nil {
+				log.Fatalf("invalid WEBHOOK_TOLERANCE %q - must be an integer (milliseconds)", _tolerance)
 			}
+
+			env.WebhookTolerance = parsed
 		}
 	}
 

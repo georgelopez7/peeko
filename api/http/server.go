@@ -1,19 +1,22 @@
 package http
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/georgelopez7/peeko/internal/service"
 )
 
 type Server struct {
 	addr    string
+	srv     *http.Server
 	service *service.Service
 }
 
 // NewServer - creates a server bound to addr, backed by the given service.
 func NewServer(addr string, svc *service.Service) *Server {
-	return &Server{addr: addr, service: svc}
+	return &Server{addr: addr, srv: &http.Server{Addr: addr}, service: svc}
 }
 
 // Addr - returns the address the server listens on.
@@ -23,5 +26,13 @@ func (s *Server) Addr() string {
 
 // Start - starts the HTTP server on the configured address.
 func (s *Server) Start() error {
-	return http.ListenAndServe(s.addr, s.NewMux())
+	s.srv.Handler = s.NewMux()
+	return s.srv.ListenAndServe()
+}
+
+// Stop - gracefully shuts down the server, waiting for in-flight requests.
+func (s *Server) Stop() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	return s.srv.Shutdown(ctx)
 }

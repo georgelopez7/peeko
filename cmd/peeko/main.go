@@ -12,9 +12,13 @@ import (
 )
 
 func main() {
+	// CONFIG
 	config := NewConfig()
 
+	// STORE
 	st := store.NewStore(100)
+
+	// WEBHOOK
 	wh := webhook.NewVerifier(webhook.Config{
 		Secret:          []byte(config.Env.WebhookSecret),
 		SignatureHeader: config.Env.WebhookSignatureHeader,
@@ -23,8 +27,14 @@ func main() {
 		Prefix:          config.Env.WebhookSignaturePrefix,
 		Tolerance:       time.Duration(config.Env.WebhookTolerance) * time.Millisecond,
 	})
-	svc := service.New(st, wh)
-	server := http.NewServer(":"+config.Port, svc)
 
-	log.Fatal(server.Start())
+	// SERVICE
+	svc := service.New(st, wh)
+
+	// SERVER
+	server := http.NewServer(":"+config.Port, svc)
+	defer server.Stop()
+	if err := server.Start(); err != nil {
+		log.Fatal(err)
+	}
 }
