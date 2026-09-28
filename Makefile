@@ -18,6 +18,13 @@ stop: # [ make stop ]
 	@lsof -ti :8080 -s TCP:LISTEN | xargs kill 2>/dev/null || true
 	@echo "> Peeko Stopped"
 
+dev: # [ make dev ]
+	$(PODMAN_DOCKER_HOST) docker compose -f dev.docker-compose.yaml up --build -d
+	@echo "> UI: http://localhost:8080/ui"
+
+dev-down: # [ make dev-down ]
+	$(PODMAN_DOCKER_HOST) docker compose -f dev.docker-compose.yaml down
+
 vet: # [ make vet ]
 	go vet ./...
 
@@ -26,11 +33,3 @@ test: # [ make test ]
 
 run-hurl: # [ make run-hurl BASE_URL=http://localhost:8080 ]
 	bash tools/_hurl/hurl.sh $(BASE_URL)
-
-dev: # [ make dev ]
-	@test -f .env || cp .env.sample .env
-	$(PODMAN_DOCKER_HOST) docker compose -f dev.docker-compose.yaml up --build -d
-	@echo "> UI: http://localhost:8080/ui"
-
-dev-down: # [ make dev-down ]
-	$(PODMAN_DOCKER_HOST) docker compose -f dev.docker-compose.yaml down
