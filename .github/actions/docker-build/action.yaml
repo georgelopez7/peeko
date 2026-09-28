@@ -1,0 +1,61 @@
+name: Docker Build
+description: Builds (and optionally pushes) a Docker image with buildx, GHA cache, and metadata-action tags.
+
+inputs:
+  context:
+    description: Build context path.
+    required: true
+  file:
+    description: Path to the Dockerfile.
+    required: true
+  image:
+    description: Image name (without registry/username prefix).
+    required: true
+  tags:
+    description: Tags in docker/metadata-action tags syntax.
+    required: true
+  push:
+    description: Whether to push the image after building.
+    required: false
+    default: "false"
+  build-args:
+    description: Build arguments passed to the Docker build.
+    required: false
+  dockerhub-username:
+    description: DockerHub username used to log in when pushing.
+    required: false
+  dockerhub-token:
+    description: DockerHub token used to log in when pushing.
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v4
+
+    - name: Log in to DockerHub
+      if: inputs.push == 'true'
+      uses: docker/login-action@v4
+      with:
+        username: ${{ inputs.dockerhub-username }}
+        password: ${{ inputs.dockerhub-token }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v6
+      with:
+        images: ${{ inputs.dockerhub-username }}/${{ inputs.image }}
+        tags: ${{ inputs.tags }}
+
+    - name: Build (and push) image
+      uses: docker/build-push-action@v7
+      with:
+        context: ${{ inputs.context }}
+        file: ${{ inputs.file }}
+        push: ${{ inputs.push == 'true' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        build-args: ${{ inputs.build-args }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max

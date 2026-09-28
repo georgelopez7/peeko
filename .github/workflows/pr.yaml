@@ -1,0 +1,33 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-go:
+    name: Go Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Run Go tests
+        uses: ./.github/actions/test-go
+
+  build-api:
+    name: Build - peeko
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Build API image
+        uses: ./.github/actions/docker-build
+        with:
+          context: .
+          file: ./cmd/peeko/Dockerfile
+          image: peeko
+          tags: pr-${{ github.event.number }}
+          push: false
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}

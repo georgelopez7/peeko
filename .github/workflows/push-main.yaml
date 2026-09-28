@@ -1,0 +1,24 @@
+name: Push To Main
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-api:
+    name: Build and Push - peeko
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Build and push API image
+        uses: ./.github/actions/docker-build
+        with:
+          context: .
+          file: ./cmd/peeko/Dockerfile
+          image: peeko
+          tags: sha-${{ github.sha }}
+          push: true
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
