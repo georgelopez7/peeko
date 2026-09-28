@@ -274,7 +274,7 @@ func TestHTTP_WebhookVerification(t *testing.T) {
 		require.Nil(t, captured.Webhook)
 	})
 
-	t.Run("should note truncated body as inconclusive", func(t *testing.T) {
+	t.Run("should skip verification when body is truncated", func(t *testing.T) {
 		s := newServerWithVerifier()
 		mux := s.NewMux()
 
@@ -287,7 +287,7 @@ func TestHTTP_WebhookVerification(t *testing.T) {
 		captured := s.service.ListRequests()[0]
 		require.NotNil(t, captured.Webhook)
 		require.True(t, captured.BodyTrunc)
-		require.Equal(t, "invalid", captured.Webhook.Status)
-		require.Contains(t, captured.Webhook.Note, "truncated")
+		require.Equal(t, "skipped", captured.Webhook.Status)
+		require.Equal(t, webhook.NoteBodyTruncated, captured.Webhook.Note)
 	})
 }

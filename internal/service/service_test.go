@@ -81,7 +81,7 @@ func TestService_InsertRequest(t *testing.T) {
 		require.NotEqual(t, captured.Webhook.ReceivedSignature, captured.Webhook.ComputedSignature)
 	})
 
-	t.Run("should note truncated bodies", func(t *testing.T) {
+	t.Run("should skip webhook verification for truncated bodies", func(t *testing.T) {
 		svc := New(store.NewStore(10), testVerifier())
 
 		big := strings.Repeat("x", domain.MaxBodySize+10)
@@ -89,7 +89,8 @@ func TestService_InsertRequest(t *testing.T) {
 
 		require.True(t, captured.BodyTrunc)
 		require.NotNil(t, captured.Webhook)
-		require.Contains(t, captured.Webhook.Note, "truncated")
+		require.Equal(t, string(webhook.StatusSkipped), captured.Webhook.Status)
+		require.Equal(t, webhook.NoteBodyTruncated, captured.Webhook.Note)
 	})
 }
 

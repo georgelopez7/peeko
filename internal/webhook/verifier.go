@@ -27,6 +27,7 @@ const (
 
 const (
 	NoteVerificationDisabled     = "WEBHOOK_VERIFICATION_DISABLED"
+	NoteBodyTruncated            = "WEBHOOK_BODY_TRUNCATED"
 	NoteMissingSignatureHeader   = "MISSING_WEBHOOK_SIGNATURE_HEADER"
 	NoteMissingTimestampHeader   = "MISSING_WEBHOOK_TIMESTAMP_HEADER"
 	NoteInvalidTimestampHeader   = "INVALID_WEBHOOK_TIMESTAMP_HEADER"
