@@ -551,6 +551,22 @@ body.sidebar-collapsed .row {
 
 /* long values: clamped preview with expand/collapse */
 
+.data-value-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.data-sub {
+  color: var(--muted);
+  font-size: 11px;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
 .data-value-wrap {
   display: flex;
   flex-direction: column;

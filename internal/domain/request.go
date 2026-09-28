@@ -29,9 +29,15 @@ type Request struct {
 // WebhookCheck - the webhook signature verification outcome for a captured request.
 type WebhookCheck struct {
 	Status            string `json:"status"`
-	SignedPayload     string `json:"signed_payload"`
+	SignatureHeader   string `json:"signature_header,omitempty"`
 	ReceivedSignature string `json:"received_signature"`
 	ComputedSignature string `json:"computed_signature"`
+	TimestampHeader   string `json:"timestamp_header,omitempty"`
+	ReceivedTimestamp string `json:"received_timestamp,omitempty"`
+	Secret            string `json:"secret,omitempty"`
+	Encoding          string `json:"encoding,omitempty"`
+	Prefix            string `json:"prefix,omitempty"`
+	SignedPayload     string `json:"signed_payload"`
 	Note              string `json:"note,omitempty"`
 }
 

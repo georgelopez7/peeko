@@ -117,18 +117,21 @@
         </div>
         {{end}}
         <div class="data-row">
-          <span class="data-label mono">Received</span>
-          {{if ge (len .Webhook.ReceivedSignature) 160}}
-          <div class="data-value-wrap">
-            <span class="data-value mono-bold tabular clamp">{{.Webhook.ReceivedSignature}}</span>
-            <button class="value-toggle mono" type="button">Show all</button>
+          <span class="data-label mono">Signature Received</span>
+          <div class="data-value-stack">
+            {{if ge (len .Webhook.ReceivedSignature) 160}}
+            <div class="data-value-wrap">
+              <span class="data-value mono-bold tabular clamp">{{.Webhook.ReceivedSignature}}</span>
+              <button class="value-toggle mono" type="button">Show all</button>
+            </div>
+            {{else}}
+            <span class="data-value mono-bold tabular">{{.Webhook.ReceivedSignature}}</span>
+            {{end}}
+            <span class="data-sub mono">({{.Webhook.SignatureHeader}})</span>
           </div>
-          {{else}}
-          <span class="data-value mono-bold tabular">{{.Webhook.ReceivedSignature}}</span>
-          {{end}}
         </div>
         <div class="data-row">
-          <span class="data-label mono">Computed</span>
+          <span class="data-label mono">Signature Computed</span>
           {{if ge (len .Webhook.ComputedSignature) 160}}
           <div class="data-value-wrap">
             <span class="data-value mono-bold tabular clamp">{{.Webhook.ComputedSignature}}</span>
@@ -138,8 +141,36 @@
           <span class="data-value mono-bold tabular">{{.Webhook.ComputedSignature}}</span>
           {{end}}
         </div>
+        {{if .Webhook.TimestampHeader}}
         <div class="data-row">
-          <span class="data-label mono">Signed content</span>
+          <span class="data-label mono">Timestamp Received</span>
+          <div class="data-value-stack">
+            <span class="data-value mono-bold tabular">{{.Webhook.ReceivedTimestamp}}</span>
+            <span class="data-sub mono">({{.Webhook.TimestampHeader}})</span>
+          </div>
+        </div>
+        {{end}}
+        <div class="data-row">
+          <span class="data-label mono">Signature</span>
+          {{if ge (len .Webhook.Secret) 160}}
+          <div class="data-value-wrap">
+            <span class="data-value mono-bold tabular clamp">{{.Webhook.Secret}}</span>
+            <button class="value-toggle mono" type="button">Show all</button>
+          </div>
+          {{else}}
+          <span class="data-value mono-bold tabular">{{.Webhook.Secret}}</span>
+          {{end}}
+        </div>
+        <div class="data-row">
+          <span class="data-label mono">Encryption Method</span>
+          <span class="data-value mono-bold tabular">{{.Webhook.Encoding}}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label mono">Prefix</span>
+          <span class="data-value mono-bold tabular">{{.Webhook.Prefix}}</span>
+        </div>
+        <div class="data-row">
+          <span class="data-label mono">Signed Content</span>
           {{if ge (len .Webhook.SignedPayload) 160}}
           <div class="data-value-wrap">
             <span class="data-value mono-bold tabular clamp">{{.Webhook.SignedPayload}}</span>

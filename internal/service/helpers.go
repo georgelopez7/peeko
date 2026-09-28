@@ -20,11 +20,18 @@ func (s *Service) checkWebhook(headers http.Header, body []byte, truncated bool)
 		return nil
 	}
 
+	cfg := s.verifier.Config()
 	check := &domain.WebhookCheck{
 		Status:            string(res.Status),
-		SignedPayload:     res.SignedPayload,
+		SignatureHeader:   res.SignatureHeader,
 		ReceivedSignature: res.ReceivedSignature,
 		ComputedSignature: res.ComputedSignature,
+		TimestampHeader:   res.TimestampHeader,
+		ReceivedTimestamp: res.ReceivedTimestamp,
+		Secret:            string(cfg.Secret),
+		Encoding:          string(cfg.Encoding),
+		Prefix:            cfg.Prefix,
+		SignedPayload:     res.SignedPayload,
 		Note:              res.Note,
 	}
 

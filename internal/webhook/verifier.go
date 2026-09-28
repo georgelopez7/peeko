@@ -67,7 +67,15 @@ type Result struct {
 	SignedPayload     string // the exact string that was signed
 	ReceivedSignature string // as sent on the wire
 	ComputedSignature string // computed locally, same encoding
+	SignatureHeader   string // name of the header the signature was read from
+	TimestampHeader   string // name of the header the timestamp was read from, if configured
+	ReceivedTimestamp string // raw timestamp header value, if used
 	Note              string // explanation for inconclusive or edge cases
+}
+
+// Config - returns the configuration the verifier runs with.
+func (v *Verifier) Config() Config {
+	return v.cfg
 }
 
 // Verify - verifies an HMAC-SHA256 signature over the raw body bytes.
@@ -76,26 +84,40 @@ func (v *Verifier) Verify(headers http.Header, body []byte, now time.Time) Resul
 		return Result{Status: StatusSkipped, Note: "webhook verification disabled - WEBHOOK_SECRET not set"}
 	}
 
+	res := Result{SignatureHeader: v.cfg.SignatureHeader}
+
 	received := headers.Get(v.cfg.SignatureHeader)
 	if received == "" {
-		return Result{Status: StatusMissing, Note: fmt.Sprintf("webhook signature header %q not present", v.cfg.SignatureHeader)}
+		res.Status = StatusMissing
+		res.Note = fmt.Sprintf("webhook signature header %q not present", v.cfg.SignatureHeader)
+		return res
 	}
+
+	res.ReceivedSignature = received
+	res.TimestampHeader = v.cfg.TimestampHeader
 
 	timestamp := ""
 	if v.cfg.TimestampHeader != "" {
 		timestamp = headers.Get(v.cfg.TimestampHeader)
+		res.ReceivedTimestamp = timestamp
 		if timestamp == "" {
-			return Result{Status: StatusMissing, Note: fmt.Sprintf("webhook timestamp header %q not present", v.cfg.TimestampHeader)}
+			res.Status = StatusMissing
+			res.Note = fmt.Sprintf("webhook timestamp header %q not present", v.cfg.TimestampHeader)
+			return res
 		}
 
 		ts, err := strconv.ParseInt(timestamp, 10, 64)
 		if err != nil {
-			return Result{Status: StatusExpired, Note: fmt.Sprintf("webhook timestamp %q is not valid unix seconds", timestamp)}
+			res.Status = StatusExpired
+			res.Note = fmt.Sprintf("webhook timestamp %q is not valid unix seconds", timestamp)
+			return res
 		}
 
 		at := time.Unix(ts, 0)
 		if now.Sub(at) > v.cfg.Tolerance || at.Sub(now) > v.cfg.Tolerance {
-			return Result{Status: StatusExpired, Note: fmt.Sprintf("webhook timestamp %s outside tolerance %s", timestamp, v.cfg.Tolerance)}
+			res.Status = StatusExpired
+			res.Note = fmt.Sprintf("webhook timestamp %s outside tolerance %s", timestamp, v.cfg.Tolerance)
+			return res
 		}
 	}
 
@@ -105,20 +127,15 @@ func (v *Verifier) Verify(headers http.Header, body []byte, now time.Time) Resul
 	}
 
 	built := v.rebuildSignature(body, timestamp, string(v.cfg.Secret))
+	res.ComputedSignature = built
+	res.SignedPayload = signedContent(body, timestamp)
+
 	if !hmac.Equal([]byte(built), []byte(signature)) {
-		return Result{
-			Status:            StatusInvalid,
-			SignedPayload:     signedContent(body, timestamp),
-			ReceivedSignature: received,
-			ComputedSignature: built,
-			Note:              "webhook signature mismatch",
-		}
+		res.Status = StatusInvalid
+		res.Note = "webhook signature mismatch"
+		return res
 	}
 
-	return Result{
-		Status:            StatusValid,
-		SignedPayload:     signedContent(body, timestamp),
-		ReceivedSignature: received,
-		ComputedSignature: built,
-	}
+	res.Status = StatusValid
+	return res
 }
