@@ -25,7 +25,7 @@ test: # [ make test ]
 	go test ./...
 
 run-hurl: # [ make run-hurl BASE_URL=http://localhost:8080 ]
-	bash tools/run-hurl.sh $(BASE_URL)
+	bash tools/_hurl/hurl.sh $(BASE_URL)
 
 dev: # [ make dev ]
 	@test -f .env || cp .env.sample .env
