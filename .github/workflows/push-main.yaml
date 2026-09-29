@@ -19,6 +19,7 @@ jobs:
           file: ./cmd/peeko/Dockerfile
           image: peeko
           tags: sha-${{ github.sha }}
+          platforms: linux/amd64,linux/arm64
           push: true
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
