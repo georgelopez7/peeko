@@ -35,6 +35,7 @@ func TestHTTP_CreateRequestHandler(t *testing.T) {
 		mux.ServeHTTP(rec, httptest.NewRequest("GET", "/hook?a=1&b=x", nil))
 
 		require.Equal(t, http.StatusOK, rec.Code)
+		require.Empty(t, rec.Body.String())
 
 		captured := s.service.ListRequests()[0]
 		require.Equal(t, "GET", captured.Method)
@@ -52,6 +53,7 @@ func TestHTTP_CreateRequestHandler(t *testing.T) {
 		mux.ServeHTTP(rec, req)
 
 		require.Equal(t, http.StatusOK, rec.Code)
+		require.Equal(t, "hello peeko", rec.Body.String())
 
 		captured := s.service.ListRequests()[0]
 		require.Equal(t, "POST", captured.Method)
@@ -67,6 +69,7 @@ func TestHTTP_CreateRequestHandler(t *testing.T) {
 		mux.ServeHTTP(rec, httptest.NewRequest("PUT", "/hook?id=7", strings.NewReader("updated")))
 
 		require.Equal(t, http.StatusOK, rec.Code)
+		require.Equal(t, "updated", rec.Body.String())
 
 		captured := s.service.ListRequests()[0]
 		require.Equal(t, "PUT", captured.Method)
@@ -81,6 +84,7 @@ func TestHTTP_CreateRequestHandler(t *testing.T) {
 		mux.ServeHTTP(rec, httptest.NewRequest("PATCH", "/hook?id=7", strings.NewReader("patched")))
 
 		require.Equal(t, http.StatusOK, rec.Code)
+		require.Equal(t, "patched", rec.Body.String())
 
 		captured := s.service.ListRequests()[0]
 		require.Equal(t, "PATCH", captured.Method)
@@ -95,6 +99,7 @@ func TestHTTP_CreateRequestHandler(t *testing.T) {
 		mux.ServeHTTP(rec, httptest.NewRequest("DELETE", "/hook?id=7", nil))
 
 		require.Equal(t, http.StatusOK, rec.Code)
+		require.Empty(t, rec.Body.String())
 
 		captured := s.service.ListRequests()[0]
 		require.Equal(t, "DELETE", captured.Method)

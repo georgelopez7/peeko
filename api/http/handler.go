@@ -1,16 +1,31 @@
 package http
 
 import (
+	"bytes"
+	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
 )
 
-// createRequestHandler - captures and stores any unmatched request.
+// createRequestHandler - captures, stores and echoes back the payload of any unmatched request.
 func (s *Server) createRequestHandler(w http.ResponseWriter, r *http.Request) {
-	s.service.InsertRequest(r)
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		slog.Error("read body", "err", err)
+		http.Error(w, "read error", http.StatusInternalServerError)
+		return
+	}
+	r.Body = io.NopCloser(bytes.NewReader(body))
 
+	captured := s.service.InsertRequest(r)
+
+	w.Header().Set("X-Peeko-ID", strconv.Itoa(captured.ID))
 	w.WriteHeader(http.StatusOK)
+
+	if _, err := w.Write(body); err != nil {
+		slog.Error("echo payload", "err", err)
+	}
 }
 
 // getRequestByIDHandler - renders the details of a request by ID.
