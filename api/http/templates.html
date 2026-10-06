@@ -46,7 +46,7 @@
     </div>
   </div>
 
-  <div class="panel-outer">
+  <div class="panel-outer panel-headers">
     <div class="panel">
       <div class="panel-title-row"><span class="panel-title mono-bold">Headers</span></div>
       <div class="data-rows">
@@ -96,8 +96,15 @@
   <div class="panel-outer">
     <div class="panel">
       <div class="panel-title-row"><span class="panel-title mono-bold">Body</span></div>
-      <pre class="body mono">{{.Body}}</pre>
-      {{if .BodyTrunc}}<div class="muted mono small">Body truncated ({{.Length}} bytes received)</div>{{end}}
+      <div class="body-wrap">
+        {{if ge (len .Body) 600}}
+        <pre class="body mono clamp">{{prettyBody .Body}}</pre>
+        <button class="value-toggle mono" type="button">Show all</button>
+        {{else}}
+        <pre class="body mono">{{prettyBody .Body}}</pre>
+        {{end}}
+      </div>
+      {{if .BodyTrunc}}<div class="muted mono small body-note">Body truncated ({{.Length}} bytes received)</div>{{end}}
     </div>
   </div>
   {{end}}
@@ -116,6 +123,7 @@
           <span class="data-value mono tabular">{{.Webhook.Note}}</span>
         </div>
         {{end}}
+        {{if and (ne .Webhook.Status "missing") (ne .Webhook.Status "skipped")}}
         <div class="data-row">
           <span class="data-label mono">Signature Received</span>
           <div class="data-value-stack">
@@ -151,7 +159,7 @@
         </div>
         {{end}}
         <div class="data-row">
-          <span class="data-label mono">Signature</span>
+          <span class="data-label mono">Secret</span>
           {{if ge (len .Webhook.Secret) 160}}
           <div class="data-value-wrap">
             <span class="data-value mono-bold tabular clamp">{{.Webhook.Secret}}</span>
@@ -180,6 +188,7 @@
           <span class="data-value mono-bold tabular">{{.Webhook.SignedPayload}}</span>
           {{end}}
         </div>
+        {{end}}
       </div>
     </div>
   </div>

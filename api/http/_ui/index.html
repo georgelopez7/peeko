@@ -72,15 +72,19 @@
       toggle.addEventListener("click", function () {
         var collapsed = document.body.classList.toggle("sidebar-collapsed");
         toggle.setAttribute("aria-expanded", String(!collapsed));
+        syncToggles();
       });
+
+      syncToggles();
     });
 
     document.addEventListener("click", function (e) {
       var toggle = e.target.closest(".value-toggle");
       if (toggle) {
-        var wrap = toggle.closest(".data-value-wrap");
+        var wrap = toggle.closest(".data-value-wrap") || toggle.closest(".body-wrap");
         var expanded = wrap.classList.toggle("expanded");
         toggle.textContent = expanded ? "Collapse" : "Show all";
+        syncToggles();
         return;
       }
 
@@ -89,6 +93,22 @@
       selectedId = row.getAttribute("hx-get").split("/").pop();
       markActive();
     });
+
+    // syncToggles - hides show all buttons whose content is not actually truncated.
+    function syncToggles() {
+      document.querySelectorAll(".value-toggle").forEach(function (button) {
+        var wrap = button.closest(".data-value-wrap") || button.closest(".body-wrap");
+        if (!wrap || wrap.classList.contains("expanded")) return;
+
+        var target = wrap.querySelector(".clamp");
+        if (!target) return;
+
+        var truncated = target.scrollHeight > target.clientHeight + 1;
+        button.classList.toggle("is-hidden", !truncated);
+      });
+    }
+
+    window.addEventListener("resize", syncToggles);
 
     document.addEventListener("htmx:afterRequest", function (e) {
       if (e.target.id !== "reset-button" || !e.detail.successful) return;
@@ -101,6 +121,7 @@
 
     document.addEventListener("htmx:afterSwap", function (e) {
       if (e.target.id === "list") markActive();
+      syncToggles();
     });
 
     function markActive() {

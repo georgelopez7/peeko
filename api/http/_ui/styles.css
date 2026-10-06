@@ -492,6 +492,14 @@ body.sidebar-collapsed .row {
 
 /* webhook verification badges */
 
+.badge-valid,
+.badge-invalid,
+.badge-expired,
+.badge-missing,
+.badge-skipped {
+  text-transform: uppercase;
+}
+
 .badge-valid {
   color: var(--green);
   border-color: rgba(34, 197, 94, 0.4);
@@ -608,12 +616,53 @@ body.sidebar-collapsed .row {
   color: var(--text);
 }
 
+.value-toggle.is-hidden {
+  display: none;
+}
+
 .body {
   padding: 12px 16px;
   font-size: 12px;
   line-height: 1.5;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+/* long bodies: clamped preview with expand/collapse */
+
+.body-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.body-wrap .body.clamp {
+  display: block;
+  -webkit-line-clamp: unset;
+  max-height: 240px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-faint);
+}
+
+.body-wrap .value-toggle {
+  align-self: flex-start;
+  margin: 0 16px 12px;
+}
+
+.body-wrap.expanded .body.clamp {
+  max-height: none;
+}
+
+.body-note {
+  padding: 0 16px 12px;
+}
+
+/* headers: cap value width so long values wrap and clamp sooner */
+
+.panel-headers .data-value,
+.panel-headers .data-value-wrap {
+  max-width: 50%;
 }
 
 /* empty states */

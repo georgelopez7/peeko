@@ -1,7 +1,9 @@
 package http
 
 import (
+	"bytes"
 	"embed"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -30,6 +32,7 @@ var templates = template.Must(template.New("").Funcs(template.FuncMap{
 	"methodClass": methodClass,
 	"statusClass": statusClass,
 	"formatValue": formatValue,
+	"prettyBody":  prettyBody,
 }).ParseFS(tplFS, "templates.html"))
 
 // handleAsset - serves an embedded static asset with the given content type.
@@ -88,4 +91,31 @@ func formatValue(v any) string {
 	default:
 		return fmt.Sprint(value)
 	}
+}
+
+// prettyBody - pretty-prints the request body when it's a form or JSON payload.
+func prettyBody(body string) string {
+	if strings.HasPrefix(body, "{") || strings.HasPrefix(body, "[") {
+		var buf bytes.Buffer
+		if err := json.Indent(&buf, []byte(body), "", "  "); err == nil && buf.Len() > 0 {
+			return buf.String()
+		}
+	}
+
+	// form-encoded: "a=1&b=2" -> "a=1\nb=2"
+	if strings.Contains(body, "=") && !strings.Contains(body, "\n") {
+		lines := strings.Split(body, "&")
+		valid := true
+		for _, line := range lines {
+			if _, _, hasValue := strings.Cut(line, "="); !hasValue {
+				valid = false
+				break
+			}
+		}
+		if valid {
+			return strings.Join(lines, "\n")
+		}
+	}
+
+	return body
 }
